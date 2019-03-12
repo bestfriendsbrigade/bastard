@@ -1,0 +1,15 @@
+html, body {
+  height: 100%;
+  width: 100%;
+}
+
+body {
+  margin: 0;
+  display: 'flex';
+  flex-direction: column;
+  background-color: #eaba00;
+  font-weight: bold;
+  font-family: 'Arial';
+  font-size: 15px;
+  color: #937500;
+}
