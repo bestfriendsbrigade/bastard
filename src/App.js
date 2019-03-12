@@ -15,12 +15,17 @@ const buttonBaseStyle = {
 
 const transitionDuration = 250;
 
+const parser = document.createElement('a');
+
 const App = () => {
+  parser.href = window.location.href;
+
   const [lastSeenIndex, setLastSeenIndex] = useState(
     parseInt(localStorage.getItem('lastSeenIndex'), 10) || 0
   );
   const [comics, setComics] = useState(null);
-  const [currentIndex, setCurrentIndex] = useState(lastSeenIndex);
+
+  const [currentIndex, setCurrentIndex] = useState(getIndexFromHash(parser.hash));
 
   useEffect(() => {
     contentfulClient.getEntries({
@@ -28,6 +33,18 @@ const App = () => {
       order: 'fields.order',
     })
       .then((comics) => setComics(comics));
+
+    window.addEventListener('hashchange', (event) => {
+      parser.href = event.newURL;
+      const newIndex = parseInt(parser.hash.replace('#/', '') - 1);
+      if (!Number.isNaN(newIndex)) {
+        setCurrentIndex(newIndex);
+      }
+    });
+
+    if (!window.location.hash) {
+      goToIndex(lastSeenIndex);
+    }
   }, []);
 
   useEffect(() => {
@@ -37,7 +54,7 @@ const App = () => {
   }, [currentIndex]);
 
   useEffect(() => {
-    localStorage.setItem('lastSeenIndex', currentIndex);
+    localStorage.setItem('lastSeenIndex', lastSeenIndex);
   }, [lastSeenIndex]);
 
   const previousIsDisabled = comics ? currentIndex === 0 : true;
@@ -187,23 +204,31 @@ const App = () => {
   );
 
   function goToFirst() {
-    setCurrentIndex(0);
+    goToIndex(0);
   }
 
   function goToPrevious() {
     if (!previousIsDisabled) {
-      setCurrentIndex(currentIndex - 1);
+      goToIndex(currentIndex - 1);
     }
   }
 
   function goToNext() {
     if (!nextIsDisabled) {
-      setCurrentIndex(currentIndex + 1);
+      goToIndex(currentIndex + 1);
     }
   }
 
   function goToLast() {
-    setCurrentIndex(comics.total - 1);
+    goToIndex(comics.total - 1);
+  }
+
+  function goToIndex(index) {
+    window.location.hash = `#/${index + 1}`;
+  }
+
+  function getIndexFromHash(hash) {
+    return parseInt(hash.replace('#/', '') - 1);
   }
 };
 
