@@ -28,11 +28,13 @@ const App = () => {
   const [currentIndex, setCurrentIndex] = useState(getIndexFromHash(parser.hash));
 
   useEffect(() => {
-    contentfulClient.getEntries({
-      content_type: 'comic',
-      order: 'fields.order',
-    })
-      .then((comics) => setComics(comics));
+    contentfulClient.getAssets()
+      .then((comics) => {
+        setComics({
+          ...comics,
+          items: comics.items.sort((a, b) => a.fields.title.localeCompare(b.fields.title))
+        });
+      });
 
     window.addEventListener('hashchange', (event) => {
       parser.href = event.newURL;
@@ -161,7 +163,7 @@ const App = () => {
                       top: 0,
                       left: 0,
                     }}
-                    src={comic.fields.image.fields.file.url} />
+                    src={comic.fields.file.url} />
                 )}
               </Transition>
             ))
