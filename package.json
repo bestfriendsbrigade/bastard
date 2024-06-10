@@ -1,9 +1,11 @@
 {
   "name": "bastard",
+  "homepage": "https://bastard.johnkeppel.com",
   "version": "0.1.0",
   "private": true,
   "dependencies": {
     "contentful": "^7.4.1",
+    "gh-pages": "^6.1.1",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "react-hotkeys-hook": "^4.5.0",
@@ -14,7 +16,9 @@
     "start": "react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test",
-    "eject": "react-scripts eject"
+    "eject": "react-scripts eject",
+    "predeploy": "build",
+    "deploy": "gh-pages -d build"
   },
   "eslintConfig": {
     "extends": "react-app"
