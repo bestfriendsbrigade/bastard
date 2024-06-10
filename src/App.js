@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { useHotkeys } from 'react-hotkeys-hook';
 import buttonSpriteSheetUrl from './assets/buttons.png';
 import createdByUrl from './assets/created_by.png';
 import newUrl from './assets/new.png';
@@ -21,20 +22,26 @@ const App = () => {
   parser.href = window.location.href;
 
   const [lastSeenIndex, setLastSeenIndex] = useState(
-    parseInt(localStorage.getItem('lastSeenIndex'), 10) || 0
+    parseInt(localStorage.getItem('lastSeenIndex'), 10) || 0,
   );
   const [comics, setComics] = useState(null);
 
-  const [currentIndex, setCurrentIndex] = useState(getIndexFromHash(parser.hash));
+  const [currentIndex, setCurrentIndex] = useState(
+    getIndexFromHash(parser.hash),
+  );
+
+  useHotkeys('left', () => goToPrevious());
+  useHotkeys('right', () => goToNext());
 
   useEffect(() => {
-    contentfulClient.getAssets()
-      .then((comics) => {
-        setComics({
-          ...comics,
-          items: comics.items.sort((a, b) => a.fields.title.localeCompare(b.fields.title))
-        });
+    contentfulClient.getAssets().then((comics) => {
+      setComics({
+        ...comics,
+        items: comics.items.sort((a, b) =>
+          a.fields.title.localeCompare(b.fields.title),
+        ),
       });
+    });
 
     window.addEventListener('hashchange', (event) => {
       parser.href = event.newURL;
@@ -53,7 +60,7 @@ const App = () => {
     if (currentIndex > lastSeenIndex) {
       setLastSeenIndex(currentIndex);
     }
-  }, [currentIndex]);
+  }, [currentIndex, lastSeenIndex]);
 
   useEffect(() => {
     localStorage.setItem('lastSeenIndex', lastSeenIndex);
@@ -75,10 +82,7 @@ const App = () => {
           marginBottom: 24,
           textAlign: 'center',
         }}>
-        <img
-          alt="title"
-          src={titleUrl}
-          style={{ maxWidth: '100%' }} />
+        <img alt="title" src={titleUrl} style={{ maxWidth: '100%' }} />
       </header>
       <nav
         style={{
@@ -95,7 +99,8 @@ const App = () => {
               marginRight: 24,
               backgroundPositionY: previousIsDisabled ? -15 : 0,
             }}
-            disabled={previousIsDisabled} />
+            disabled={previousIsDisabled}
+          />
           <button
             onClick={goToPrevious}
             style={{
@@ -104,7 +109,8 @@ const App = () => {
               backgroundPositionX: -69,
               backgroundPositionY: previousIsDisabled ? -15 : 0,
             }}
-            disabled={previousIsDisabled} />
+            disabled={previousIsDisabled}
+          />
         </div>
         <div>
           <button
@@ -115,7 +121,8 @@ const App = () => {
               backgroundPositionX: -136,
               backgroundPositionY: nextIsDisabled ? -15 : 0,
             }}
-            disabled={nextIsDisabled} />
+            disabled={nextIsDisabled}
+          />
           <button
             onClick={goToLast}
             style={{
@@ -125,61 +132,62 @@ const App = () => {
               backgroundPositionY: nextIsDisabled ? -15 : 0,
               marginLeft: 24,
             }}
-            disabled={nextIsDisabled} />
+            disabled={nextIsDisabled}
+          />
         </div>
       </nav>
-      <div style={{
-        border: '4px solid #343838',
-        boxShadow: '6px 6px 0px #937500',
-        boxSizing: 'border-box',
-        fontSize: 0,
-        position: 'relative',
-        background: '#fff',
-        paddingBottom: '49.326%',
-      }}>
-        {comics
-          ? (
-            comics.items.map((comic, i) => (
-              <Transition
-                key={i}
-                in={currentIndex === i}
-                timeout={transitionDuration}
-                mountOnEnter
-                unmountOnExit>
-                {(state) => (
-                  <img
-                    alt={comic.fields.title}
-                    title={comic.fields.title}
-                    style={{
-                      maxWidth: '100%',
-                      transition: `opacity ${transitionDuration}ms ease-out`,
-                      opacity: {
-                        entering: 0,
-                        entered: 1,
-                        exiting: 0,
-                        exited: 0,
-                      }[state],
-                      position: 'absolute',
-                      top: 0,
-                      left: 0,
-                    }}
-                    src={comic.fields.file.url} />
-                )}
-              </Transition>
-            ))
-          )
-          : (
-            <img
-              alt="loading"
-              src={spinnerUrl}
-              style={{
-                position: 'absolute',
-                left: '50%',
-                top: '50%',
-                tranform: 'translate(-50%, -50%)'
-              }} />
-          )
-        }
+      <div
+        style={{
+          border: '4px solid #343838',
+          boxShadow: '6px 6px 0px #937500',
+          boxSizing: 'border-box',
+          fontSize: 0,
+          position: 'relative',
+          background: '#fff',
+          paddingBottom: '49.326%',
+        }}>
+        {comics ? (
+          comics.items.map((comic, i) => (
+            <Transition
+              key={i}
+              in={currentIndex === i}
+              timeout={transitionDuration}
+              mountOnEnter
+              unmountOnExit>
+              {(state) => (
+                <img
+                  alt={comic.fields.title}
+                  title={comic.fields.title}
+                  style={{
+                    maxWidth: '100%',
+                    transition: `opacity ${transitionDuration}ms ease-out`,
+                    opacity: {
+                      entering: 0,
+                      entered: 1,
+                      exiting: 0,
+                      exited: 0,
+                    }[state],
+                    position: 'absolute',
+                    top: 0,
+                    left: 0,
+                  }}
+                  src={comic.fields.file.url}
+                />
+              )}
+            </Transition>
+          ))
+        ) : (
+          <img
+            alt="loading"
+            src={spinnerUrl}
+            style={{
+              position: 'absolute',
+              left: '50%',
+              top: '50%',
+              tranform: 'translate(-50%, -50%)',
+            }}
+          />
+        )}
       </div>
       <div
         style={{
@@ -198,7 +206,9 @@ const App = () => {
             {lastSeenIndex < comics.total - 1 && (
               <img src={newUrl} alt="New!" style={{ marginRight: 8 }} />
             )}
-            <span>{currentIndex + 1}/{comics.total}</span>
+            <span>
+              {currentIndex + 1}/{comics.total}
+            </span>
           </div>
         )}
       </div>
